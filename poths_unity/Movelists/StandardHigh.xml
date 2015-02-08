@@ -1,0 +1,14 @@
+<Move Name="High" Recovery="0">
+	<Hitbox Spawntime="5" Lifetime="2" PosX="3.7" PosY="6" Radius="2" Type="Hit">
+		<Property Type="Damage" Value="50"/>
+		<Property Type="Hitstun" Value="26"/>
+		<Property Type="Blockstun" Value="14"/>
+	</Hitbox>
+	<Effect Type="Animation">
+		<Property Type="Name"		Value="high" />
+		<Property Type="Starttime" 	Value="0" />
+	</Effect>
+	<Effect Type="Recovery">
+		<Property Type="Time"		Value="18" />
+	</Effect>
+</Move>
