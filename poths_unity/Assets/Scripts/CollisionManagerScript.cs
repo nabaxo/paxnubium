@@ -11,13 +11,31 @@ public enum CollisionType{
 	Hit
 }
 
+public interface Collider {
+	void OnCollision(CollObject myObj, CollObject theirObj);
+}
+
 public struct CollObject {
-	public GameObject owner;
+
+	public CollObject(int ID, Collider collider, Vector2 pos, float radius, CollisionType type) 
+	{
+		this.ID = ID;
+		this.collider = collider;
+		this.pos = pos;
+		this.radius = radius;
+		this.type = type;
+		this.properties = new Dictionary<PropertyType, int>();
+	}
+	
+	public int ID;
+	public Collider collider;
 	public Vector2 pos;
 	public float radius;
 	public CollisionType type;
 	public Dictionary<PropertyType, int> properties;
 }
+
+
 
 public class CollisionManagerScript : MonoBehaviour {
 
@@ -25,6 +43,8 @@ public class CollisionManagerScript : MonoBehaviour {
 	private List<GameObject> myRenderSpherePool;
 	#endif
 	private List<CollObject> myCircleList;
+	private int IDGenerator = 0;
+	
 	// Use this for initialization
 	void Start () {
 		myCircleList = new List<CollObject>();
@@ -75,7 +95,7 @@ public class CollisionManagerScript : MonoBehaviour {
 	
 	void CollisionCheck(CollObject obj, CollObject otherObj)
 	{
-		if(obj.owner == otherObj.owner)
+		if(obj.ID == otherObj.ID)
 			return;
 			
 		//one object has to be Hit and the other has to be Hittable
@@ -85,8 +105,8 @@ public class CollisionManagerScript : MonoBehaviour {
 		   
 		if(Vector2.Distance(obj.pos, otherObj.pos) < (obj.radius + otherObj.radius))
 		{
-			obj.owner.GetComponent<MovementScript>().OnCollision(obj, otherObj);
-			otherObj.owner.GetComponent<MovementScript>().OnCollision(otherObj, obj);
+			obj.collider.OnCollision(obj, otherObj);
+			otherObj.collider.OnCollision(otherObj, obj);
 		}
 	}
 	
@@ -94,4 +114,6 @@ public void AddCollBox(CollObject obj)
 	{
 		myCircleList.Add(obj);
 	}
+	
+	public int GetColliderID() { return IDGenerator++; }
 }

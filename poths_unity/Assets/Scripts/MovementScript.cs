@@ -14,7 +14,7 @@ public enum State
 	Blockstun
 };
 
-public class MovementScript : MonoBehaviour {
+public class MovementScript : MonoBehaviour, Collider {
 	
 	public string buttonRight;
 	public string buttonLeft;
@@ -28,6 +28,8 @@ public class MovementScript : MonoBehaviour {
 	public GameObject targetCharacter;
 	public GameObject managerCollection;
 	
+	public InputReader inputReader;
+	
 	private int health = 1000;
 	
 	private float horSpeed = 0;
@@ -38,10 +40,13 @@ public class MovementScript : MonoBehaviour {
 	private State currentState = State.Idle;
 	
 	private MoveList myMoves;
+	private Move currentMove;
 	
 	private int attackTimer = 0;
 	private int attackTime = 0;
 	private int stunTime = 0;
+	
+	private int colliderID = 0;
 	
 	//TODO do more robust sytem, this is just to get something working asap
 	private bool attackHit = false;
@@ -49,6 +54,7 @@ public class MovementScript : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+	
 	
 		myMoves = new MoveList();
 		myMoves.Load("Movelists");
@@ -62,11 +68,14 @@ public class MovementScript : MonoBehaviour {
 		animation["hit"].speed = 0.1f;
 		animation["block"].speed = 0.8f;
 
+		foreach(AnimationState state in animation)
+		{
+			state.wrapMode = WrapMode.Once;
+		}		
 		animation["idle"].wrapMode = WrapMode.Loop;
 		animation["walk"].wrapMode = WrapMode.Loop;
-		animation["jump"].wrapMode = WrapMode.Once;
-		animation["hit"].wrapMode = WrapMode.Once;
-		animation["block"].wrapMode = WrapMode.Once;
+		
+		colliderID = managerCollection.GetComponent<CollisionManagerScript>().GetColliderID();
 	}
 	
 	// Update is called once per frame
@@ -91,32 +100,12 @@ public class MovementScript : MonoBehaviour {
 			}
 		}
 		
-		CollObject hurtBox1 = new CollObject();
-		hurtBox1.owner = this.gameObject;
-		hurtBox1.radius = 2;
-		hurtBox1.type = CollisionType.Hittable;
-		
-		CollObject hurtBox2 = new CollObject();
-		hurtBox2.owner = this.gameObject;
-		hurtBox2.radius = 2;
-		hurtBox2.type = CollisionType.Hittable;
-		
-		CollObject hurtBox3 = new CollObject();
-		hurtBox3.owner = this.gameObject;
-		hurtBox3.radius = 2;
-		hurtBox3.type = CollisionType.Hittable;
-		
-		CollObject hurtBox4 = new CollObject();
-		hurtBox4.owner = this.gameObject;
-		hurtBox4.radius = 2;
-		hurtBox4.type = CollisionType.Hittable;
-		
 		//MAGIC NUMBERS FOR NOW: FIX
 		//position of hitbox will be read from data later
-		hurtBox1.pos = new Vector2(this.transform.position.x, this.transform.position.y+1.0f);
-		hurtBox2.pos = new Vector2(this.transform.position.x, this.transform.position.y+3.0f);
-		hurtBox3.pos = new Vector2(this.transform.position.x, this.transform.position.y+5.0f);
-		hurtBox4.pos = new Vector2(this.transform.position.x, this.transform.position.y+7.0f);
+		CollObject hurtBox1 = new CollObject(colliderID, this, new Vector2(this.transform.position.x, this.transform.position.y+1.0f), 2, CollisionType.Hittable);
+		CollObject hurtBox2 = new CollObject(colliderID, this, new Vector2(this.transform.position.x, this.transform.position.y+3.0f), 2, CollisionType.Hittable);
+		CollObject hurtBox3 = new CollObject(colliderID, this, new Vector2(this.transform.position.x, this.transform.position.y+5.0f), 2, CollisionType.Hittable);		
+		CollObject hurtBox4 = new CollObject(colliderID, this, new Vector2(this.transform.position.x, this.transform.position.y+7.0f), 2, CollisionType.Hittable);
 		
 		managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(hurtBox1);
 		managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(hurtBox2);
@@ -125,17 +114,13 @@ public class MovementScript : MonoBehaviour {
 		
 		if(currentState == State.Attacking && !attackHit)
 		{
-			Move attack = myMoves.GetMove("High");
-			if(attack != null)
+			if(currentMove != null)
 			{
-				Hitbox box = attack.Hitboxes[0];
-				if(attackTimer > box.Spawntime && attackTimer < attack.Attacktime)
+				Hitbox box = currentMove.Hitboxes[0];
+				if(attackTimer > box.Spawntime && attackTimer < currentMove.Attacktime)
 				{
-					CollObject attackBox = new CollObject();
-					attackBox.owner = this.gameObject;
-					attackBox.pos = new Vector2(this.transform.position.x + (viewDirection * box.PosX), this.transform.position.y+box.PosY);
-					attackBox.radius = box.Radius;
-					attackBox.type = box.Type;
+					CollObject attackBox = new CollObject(colliderID, this, new Vector2(this.transform.position.x + (viewDirection * box.PosX), this.transform.position.y+box.PosY), box.Radius, box.Type);
+					
 					attackBox.properties = new System.Collections.Generic.Dictionary<PropertyType, int>();
 					foreach(AttackProperty prop in box.Properties)
 					{
@@ -154,34 +139,21 @@ public class MovementScript : MonoBehaviour {
 
 		if (currentState == State.Idle)
 		{
-			if(Input.GetButton(buttonHigh)) 
-			{
-				Move attack = myMoves.GetMove("High");
-				
+			currentMove = this.inputReader.InputtedMove();
+			if(currentMove != null) 
+			{				
 				horSpeed = 0;
 				currentState = State.Attacking;
 				attackHit = false;
-				attackTime = attack.Totaltime;
+				attackTime = currentMove.Totaltime;
 				attackTimer = 0;
 				
-				//Find Animation Effect
-				Effect anim = attack.Effects.Find(delegate(Effect obj) {
-					return obj.Type == EffectType.Animation;
-				});
-				
-				if(anim != null)
+				EffectProperty prop = currentMove.GetProperty(EffectType.Animation, PropertyType.Name);
+							
+				if(prop != null)
 				{
-					//Find Name property
-					EffectProperty prop = anim.Properties.Find(delegate(EffectProperty obj) {
-						return obj.Type == PropertyType.Name;	
-					});
-					
-					if(prop != null)
-					{
-						animation[prop.Value].wrapMode = WrapMode.Once;
-						animation[prop.Value].speed = animation[prop.Value].length / (attackTime/60.0f);
-						animation.Play(prop.Value);
-					}
+					animation[prop.Value].speed = animation[prop.Value].length / (attackTime/60.0f);
+					animation.Play(prop.Value);
 				}
 			}
 		}
@@ -289,7 +261,7 @@ public class MovementScript : MonoBehaviour {
 		transform.position = defaultPos;
 	}
 	
-	public void OnCollision(CollObject myObj, CollObject theirObj)
+	void Collider.OnCollision(CollObject myObj, CollObject theirObj)
 	{
 		if(myObj.type == CollisionType.Hittable && !hitThisFrame)
 		{

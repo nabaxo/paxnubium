@@ -54,7 +54,7 @@ public class MoveList : List<Move>
 }
 
 [XmlRoot("Move")]
-public class Move
+public class Move : Collider
 {
 	public void Init()
 	{
@@ -70,35 +70,58 @@ public class Move
 		
 		int recoveryTime = 0;
 		
-		//Find Recovery effect
-		Effect recoveryEffect = Effects.Find(delegate(Effect obj) {
-			return obj.Type == EffectType.Recovery;
-		});
-		
-		if(recoveryEffect != null)
+		EffectProperty prop = GetProperty(EffectType.Recovery, PropertyType.Time);
+		if(prop != null)
 		{
-			//Find Time property
-			EffectProperty prop = recoveryEffect.Properties.Find(delegate(EffectProperty obj) {
-				return obj.Type == PropertyType.Time;	
-			});
-				
-			if(prop != null)
+			try
 			{
-				try
-				{
-					recoveryTime = Convert.ToInt32(prop.Value);
-				}
-				catch (Exception)
-				{
-					Debug.Log("Recovery not correct format in move: " + Name);
-					recoveryTime = 0;
-				}
+				recoveryTime = Convert.ToInt32(prop.Value);
+			}
+			catch (Exception)
+			{
+				Debug.Log("Recovery not correct format in move: " + Name);
+				recoveryTime = 0;
 			}
 		}
 		
 		Totaltime = Attacktime + recoveryTime;
 	}
 		
+	public EffectProperty GetProperty(EffectType effect, PropertyType property)
+	{
+		//Find Effect
+		Effect eff = Effects.Find(delegate(Effect obj) {
+			return obj.Type == effect;
+		});
+		
+		if(eff != null)
+		{
+			//Find property
+			EffectProperty prop = eff.Properties.Find(delegate(EffectProperty obj) {
+				return obj.Type == property;	
+			});
+			
+			return prop;
+		}
+		
+		return null;
+	}
+	
+	public void Start()
+	{
+		AttackTimer = 0;
+	}
+	
+	public void Update()
+	{
+		AttackTimer++;
+	}
+	
+	public void OnCollision(CollObject myObj, CollObject theirObj)
+	{
+		//TODO
+	}
+	
 	[XmlAttribute("Name")]
 	public string Name = "";
 	
@@ -115,6 +138,10 @@ public class Move
 	//Dynamically calculated values:
 	public int Attacktime;
 	public int Totaltime;
+	
+	//Values that change while attack is happening:
+	public bool AttackHit;
+	public int AttackTimer;
 }
 
 public class Hitbox

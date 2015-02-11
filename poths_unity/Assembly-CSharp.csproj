@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\CameraMovement.cs" />
      <Compile Include="Assets\Scripts\CollisionManagerScript.cs" />
+     <Compile Include="Assets\Scripts\InputReader.cs" />
      <Compile Include="Assets\Scripts\MatchManagerScript.cs" />
      <Compile Include="Assets\Scripts\MoveList.cs" />
      <Compile Include="Assets\Scripts\MovementScript.cs" />
