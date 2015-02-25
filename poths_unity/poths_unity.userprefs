@@ -1,9 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\MovementScript.cs">
     <Files>
-      <File FileName="Assets\Scripts\MoveList.cs" Line="90" Column="67" />
-      <File FileName="Assets\Scripts\MovementScript.cs" Line="23" Column="27" />
+      <File FileName="Assets\Scripts\MovementScript.cs" Line="87" Column="24" />
+      <File FileName="Assets\Scripts\MoveList.cs" Line="224" Column="6" />
+      <File FileName="Assets\Scripts\InputReader.cs" Line="30" Column="35" />
+      <File FileName="Assets\Scripts\CollisionManagerScript.cs" Line="113" Column="3" />
+      <File FileName="Assets\Scripts\MatchManagerScript.cs" Line="35" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -42,15 +42,9 @@ public class MovementScript : MonoBehaviour, Collider {
 	private MoveList myMoves;
 	private Move currentMove;
 	
-	private int attackTimer = 0;
-	private int attackTime = 0;
 	private int stunTime = 0;
 	
 	private int colliderID = 0;
-	
-	//TODO do more robust sytem, this is just to get something working asap
-	private bool attackHit = false;
-	private bool hitThisFrame = false;
 	
 	// Use this for initialization
 	void Start () {
@@ -81,18 +75,17 @@ public class MovementScript : MonoBehaviour, Collider {
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
-		hitThisFrame = false;
-		
-		if (attackTimer < attackTime)
+		if (currentMove != null && !currentMove.Active())
 		{
-			attackTimer++;
-			if (attackTimer >= attackTime) 
-			{
-				currentState = State.Idle;
-			}
+			currentMove = null;
+			currentState = State.Idle;
 		}
-		else if (stunTime > 0)
+		
+		if (stunTime > 0)
 		{
+			if(currentMove != null)
+				currentMove = null;
+			
 			stunTime--;
 			if (stunTime <= 0) 
 			{
@@ -112,22 +105,11 @@ public class MovementScript : MonoBehaviour, Collider {
 		managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(hurtBox3);
 		managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(hurtBox4);
 		
-		if(currentState == State.Attacking && !attackHit)
+		if(currentState == State.Attacking)
 		{
 			if(currentMove != null)
 			{
-				Hitbox box = currentMove.Hitboxes[0];
-				if(attackTimer > box.Spawntime && attackTimer < currentMove.Attacktime)
-				{
-					CollObject attackBox = new CollObject(colliderID, this, new Vector2(this.transform.position.x + (viewDirection * box.PosX), this.transform.position.y+box.PosY), box.Radius, box.Type);
-					
-					attackBox.properties = new System.Collections.Generic.Dictionary<PropertyType, int>();
-					foreach(AttackProperty prop in box.Properties)
-					{
-						attackBox.properties.Add(prop.Type, prop.Value);
-					}
-					managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(attackBox);
-				}
+				currentMove.Update();
 			}
 		}		
 		
@@ -144,17 +126,8 @@ public class MovementScript : MonoBehaviour, Collider {
 			{				
 				horSpeed = 0;
 				currentState = State.Attacking;
-				attackHit = false;
-				attackTime = currentMove.Totaltime;
-				attackTimer = 0;
 				
-				EffectProperty prop = currentMove.GetProperty(EffectType.Animation, PropertyType.Name);
-							
-				if(prop != null)
-				{
-					animation[prop.Value].speed = animation[prop.Value].length / (attackTime/60.0f);
-					animation.Play(prop.Value);
-				}
+				currentMove.Do(this);
 			}
 		}
 		
@@ -259,13 +232,14 @@ public class MovementScript : MonoBehaviour, Collider {
 	{
 		health = 1000;
 		transform.position = defaultPos;
+		currentState = State.Idle;
+		currentMove = null;
 	}
 	
-	void Collider.OnCollision(CollObject myObj, CollObject theirObj)
+	bool Collider.OnCollision(CollObject myObj, CollObject theirObj)
 	{
-		if(myObj.type == CollisionType.Hittable && !hitThisFrame)
+		if(myObj.type == CollisionType.Hittable)
 		{
-			hitThisFrame = true;
 						
 			if(currentState == State.Blocking || currentState == State.Blockstun)
 			{
@@ -290,6 +264,7 @@ public class MovementScript : MonoBehaviour, Collider {
 					currentState = State.Hitstun;
 					if(animation)
 					{
+						animation["hit"].time = 0;
 						animation["hit"].speed = animation["hit"].length / (stunTime/60.0f);
 						animation.Play("hit");
 					}
@@ -299,14 +274,36 @@ public class MovementScript : MonoBehaviour, Collider {
 				theirObj.properties.TryGetValue(PropertyType.Damage, out dmg);
 				health -= dmg;
 			}
+			
+			//disable our hurtboxes for the rest of this frame
+			return false;
 		}	
-		
-		if(myObj.type == CollisionType.Hit)
-			attackHit = true;
+		else if(myObj.type == CollisionType.Hit)
+			currentMove.OnCollision(myObj, theirObj);
+			
+		return true;
 	}
 	
 	public int GetHealth()
 	{
 		return health;
+	}
+	
+	public void CreateHitbox(Hitbox box)
+	{
+		CollObject attackBox = new CollObject(colliderID, box.HitID, this, new Vector2(this.transform.position.x + (viewDirection * box.PosX), this.transform.position.y+box.PosY), box.Radius, box.Type, box.enabled);
+		
+		attackBox.properties = new System.Collections.Generic.Dictionary<PropertyType, int>();
+		foreach(AttackProperty prop in box.Properties)
+		{
+			attackBox.properties.Add(prop.Type, prop.Value);
+		}
+		managerCollection.GetComponent<CollisionManagerScript>().AddCollBox(attackBox);
+	}
+	
+	public void PlayAnimation(string name, int animLength)
+	{
+		animation[name].speed = animation[name].length / (animLength/60.0f);
+		animation.Play(name);
 	}
 }

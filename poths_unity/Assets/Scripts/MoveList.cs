@@ -54,7 +54,7 @@ public class MoveList : List<Move>
 }
 
 [XmlRoot("Move")]
-public class Move : Collider
+public class Move
 {
 	public void Init()
 	{
@@ -86,7 +86,46 @@ public class Move : Collider
 		
 		Totaltime = Attacktime + recoveryTime;
 	}
+	
+	public void Do(MovementScript parent)
+	{
+		AttackTimer = 0;
+		foreach(Hitbox attack in Hitboxes)
+		{
+			attack.enabled = true;
+		}
+		parentRef = parent;
+	}
+	
+	public void Update()
+	{
+		foreach(Hitbox box in Hitboxes)
+		{
+			if(AttackTimer > box.Spawntime && AttackTimer < box.Spawntime + box.Lifetime)
+			{
+				parentRef.CreateHitbox(box);
+			}
+		}
 		
+		foreach(Effect effect in Effects)
+		{
+			EffectProperty timeProp = effect.GetProperty(PropertyType.Starttime);
+			
+			if(AttackTimer == ((timeProp != null) ? timeProp.GetValueInt() : 0))
+			{
+				switch(effect.Type)
+				{
+					case EffectType.Animation:
+						EffectProperty nameProp = effect.GetProperty(PropertyType.Name);
+						parentRef.PlayAnimation(((nameProp != null) ? nameProp.Value : ""), Totaltime);
+					break;
+				}
+			}
+		}
+		
+		AttackTimer++;
+	}
+	
 	public EffectProperty GetProperty(EffectType effect, PropertyType property)
 	{
 		//Find Effect
@@ -96,30 +135,26 @@ public class Move : Collider
 		
 		if(eff != null)
 		{
-			//Find property
-			EffectProperty prop = eff.Properties.Find(delegate(EffectProperty obj) {
-				return obj.Type == property;	
-			});
-			
-			return prop;
+			return eff.GetProperty(property);
 		}
 		
 		return null;
 	}
-	
-	public void Start()
+		
+	public bool Active()
 	{
-		AttackTimer = 0;
-	}
-	
-	public void Update()
-	{
-		AttackTimer++;
+		return (AttackTimer <= Totaltime);
 	}
 	
 	public void OnCollision(CollObject myObj, CollObject theirObj)
 	{
-		//TODO
+		foreach(Hitbox attack in Hitboxes)
+		{
+			if(attack.HitID == myObj.HitID)
+			{
+				attack.enabled = false;
+			}
+		}
 	}
 	
 	[XmlAttribute("Name")]
@@ -140,14 +175,22 @@ public class Move : Collider
 	public int Totaltime;
 	
 	//Values that change while attack is happening:
-	public bool AttackHit;
 	public int AttackTimer;
+	
+	//Reference to creator
+	private MovementScript parentRef;
 }
 
 public class Hitbox
 {
+	//Controls
+	public bool enabled;
+	
+	//Attributes
 	[XmlAttribute("Spawntime")]
 	public int Spawntime = 0;
+	[XmlAttribute("HitID")]
+	public int HitID = 0;
 	[XmlAttribute("Lifetime")]
 	public int Lifetime = 0;
 	[XmlAttribute("PosX")]
@@ -173,6 +216,16 @@ public class AttackProperty
 
 public class Effect
 {
+	public EffectProperty GetProperty( PropertyType property)
+	{		
+		//Find property
+		EffectProperty prop = Properties.Find(delegate(EffectProperty obj) {
+			return obj.Type == property;	
+		});
+		
+		return prop;
+	}
+	
 	[XmlAttribute("Type")]
 	public EffectType Type = 0;
 	
@@ -182,6 +235,22 @@ public class Effect
 
 public class EffectProperty
 {
+	public int GetValueInt()
+	{		
+		int ret;
+		try
+		{
+			ret = Convert.ToInt32(Value);
+		}
+		catch (Exception)
+		{
+			Debug.Log(Type.ToString() + " not correct format in move");
+			return 0;
+		}
+		
+		return ret;
+	}
+	
 	[XmlAttribute("Type")]
 	public PropertyType Type = PropertyType.Unknown;
 	[XmlAttribute("Value")]

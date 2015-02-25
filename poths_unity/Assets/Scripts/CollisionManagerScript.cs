@@ -1,4 +1,4 @@
-﻿//#define RENDERHITSPHERES
+﻿#define RENDERHITSPHERES
 
 using UnityEngine;
 using System;
@@ -12,7 +12,7 @@ public enum CollisionType{
 }
 
 public interface Collider {
-	void OnCollision(CollObject myObj, CollObject theirObj);
+	bool OnCollision(CollObject myObj, CollObject theirObj);
 }
 
 public struct CollObject {
@@ -20,6 +20,20 @@ public struct CollObject {
 	public CollObject(int ID, Collider collider, Vector2 pos, float radius, CollisionType type) 
 	{
 		this.ID = ID;
+		this.HitID = -1;
+		this.enabled = true;
+		this.collider = collider;
+		this.pos = pos;
+		this.radius = radius;
+		this.type = type;
+		this.properties = new Dictionary<PropertyType, int>();
+	}
+	
+	public CollObject(int ID, int HitID, Collider collider, Vector2 pos, float radius, CollisionType type, bool enabled) 
+	{
+		this.ID = ID;
+		this.HitID = HitID;
+		this.enabled = enabled;
 		this.collider = collider;
 		this.pos = pos;
 		this.radius = radius;
@@ -28,6 +42,8 @@ public struct CollObject {
 	}
 	
 	public int ID;
+	public int HitID;
+	public bool enabled;
 	public Collider collider;
 	public Vector2 pos;
 	public float radius;
@@ -95,6 +111,9 @@ public class CollisionManagerScript : MonoBehaviour {
 	
 	void CollisionCheck(CollObject obj, CollObject otherObj)
 	{
+		if(!obj.enabled || !otherObj.enabled)
+			return;
+			
 		if(obj.ID == otherObj.ID)
 			return;
 			
@@ -105,12 +124,12 @@ public class CollisionManagerScript : MonoBehaviour {
 		   
 		if(Vector2.Distance(obj.pos, otherObj.pos) < (obj.radius + otherObj.radius))
 		{
-			obj.collider.OnCollision(obj, otherObj);
-			otherObj.collider.OnCollision(otherObj, obj);
+			obj.enabled = obj.collider.OnCollision(obj, otherObj);
+			otherObj.enabled = otherObj.collider.OnCollision(otherObj, obj);
 		}
 	}
 	
-public void AddCollBox(CollObject obj)
+	public void AddCollBox(CollObject obj)
 	{
 		myCircleList.Add(obj);
 	}
