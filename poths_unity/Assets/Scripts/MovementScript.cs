@@ -53,21 +53,21 @@ public class MovementScript : MonoBehaviour, Collider {
 		myMoves = new MoveList();
 		myMoves.Load("Movelists");
 		
-		if(!animation)
+		if(!GetComponent<Animation>())
 			return;
 			
-		animation["idle"].speed = 0.1f;
-		animation["walk"].speed = 0.1f;
-		animation["jump"].speed = 0.1f;
-		animation["hit"].speed = 0.1f;
-		animation["block"].speed = 0.8f;
+		GetComponent<Animation>()["idle"].speed = 0.1f;
+		GetComponent<Animation>()["walk"].speed = 0.1f;
+		GetComponent<Animation>()["jump"].speed = 0.1f;
+		GetComponent<Animation>()["hit"].speed = 0.1f;
+		GetComponent<Animation>()["block"].speed = 0.8f;
 
-		foreach(AnimationState state in animation)
+		foreach(AnimationState state in GetComponent<Animation>())
 		{
 			state.wrapMode = WrapMode.Once;
 		}		
-		animation["idle"].wrapMode = WrapMode.Loop;
-		animation["walk"].wrapMode = WrapMode.Loop;
+		GetComponent<Animation>()["idle"].wrapMode = WrapMode.Loop;
+		GetComponent<Animation>()["walk"].wrapMode = WrapMode.Loop;
 		
 		colliderID = managerCollection.GetComponent<CollisionManagerScript>().GetColliderID();
 	}
@@ -116,7 +116,7 @@ public class MovementScript : MonoBehaviour, Collider {
 		DoMovement();
 		
 		//Animations
-		if (animation == null)
+		if (GetComponent<Animation>() == null)
 			return;
 
 		if (currentState == State.Idle)
@@ -137,7 +137,7 @@ public class MovementScript : MonoBehaviour, Collider {
 			{
 				horSpeed = 0;
 				
-				animation.Play("block");
+				GetComponent<Animation>().Play("block");
 					
 				currentState = State.Blocking;
 			}
@@ -151,9 +151,9 @@ public class MovementScript : MonoBehaviour, Collider {
 		if (currentState == State.Idle) 
 		{
 			if(horSpeed != 0)
-				animation.Play("walk");
+				GetComponent<Animation>().Play("walk");
 			else
-				animation.Play ("idle");
+				GetComponent<Animation>().Play ("idle");
 		}
 	}
 
@@ -182,8 +182,8 @@ public class MovementScript : MonoBehaviour, Collider {
 				horSpeed *= 0.7f;
 
 				currentState = State.Jumping;
-				if(animation)
-					animation.Play("jump");
+				if(GetComponent<Animation>())
+					GetComponent<Animation>().Play("jump");
 			}
 		}
 		else
@@ -262,11 +262,11 @@ public class MovementScript : MonoBehaviour, Collider {
 				{
 					horSpeed = 0;
 					currentState = State.Hitstun;
-					if(animation)
+					if(GetComponent<Animation>())
 					{
-						animation["hit"].time = 0;
-						animation["hit"].speed = animation["hit"].length / (stunTime/60.0f);
-						animation.Play("hit");
+						GetComponent<Animation>()["hit"].time = 0;
+						GetComponent<Animation>()["hit"].speed = GetComponent<Animation>()["hit"].length / (stunTime/60.0f);
+						GetComponent<Animation>().Play("hit");
 					}
 				}
 				
@@ -303,7 +303,7 @@ public class MovementScript : MonoBehaviour, Collider {
 	
 	public void PlayAnimation(string name, int animLength)
 	{
-		animation[name].speed = animation[name].length / (animLength/60.0f);
-		animation.Play(name);
+		GetComponent<Animation>()[name].speed = GetComponent<Animation>()[name].length / (animLength/60.0f);
+		GetComponent<Animation>().Play(name);
 	}
 }

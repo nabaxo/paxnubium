@@ -83,7 +83,7 @@ public class CollisionManagerScript : MonoBehaviour {
 		#if RENDERHITSPHERES
 		foreach(GameObject sphere in myRenderSpherePool)
 		{
-			sphere.renderer.enabled = false;
+			sphere.GetComponent<Renderer>().enabled = false;
 		}
 		
 		for(int i = 0; i < myCircleList.Count; i++)
@@ -99,11 +99,11 @@ public class CollisionManagerScript : MonoBehaviour {
 			//sphere.transform.localScale = Vector3();
 			sphere.transform.position = new Vector3(obj.pos.x, obj.pos.y, 0);
 			sphere.transform.localScale = new Vector3(obj.radius, obj.radius, obj.radius);
-			sphere.renderer.enabled = true;
+			sphere.GetComponent<Renderer>().enabled = true;
 			if(obj.type == CollisionType.Hit)
-				sphere.renderer.material.color = Color.red;
+				sphere.GetComponent<Renderer>().material.color = Color.red;
 			if(obj.type == CollisionType.Hittable)
-				sphere.renderer.material.color = Color.green;
+				sphere.GetComponent<Renderer>().material.color = Color.green;
 		}
 		#endif
 		myCircleList.Clear();
