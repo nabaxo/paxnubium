@@ -1,12 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\MovementScript.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\InputReader.cs">
     <Files>
+      <File FileName="Assets\Scripts\InputReader.cs" Line="13" Column="26" />
+      <File FileName="Assets\Scripts\CollisionManagerScript.cs" Line="9" Column="10" />
       <File FileName="Assets\Scripts\CameraMovement.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\MovementScript.cs" Line="154" Column="16" />
+      <File FileName="Assets\Scripts\MovementScript.cs" Line="79" Column="22" />
       <File FileName="Assets\Scripts\MoveList.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\InputReader.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\CollisionManagerScript.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\MatchManagerScript.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
