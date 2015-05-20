@@ -46,6 +46,8 @@ public class MovementScript : MonoBehaviour, Collider {
 	
 	private int colliderID = 0;
 	
+	private Animation animations;
+	
 	// Use this for initialization
 	void Start () {
 	
@@ -53,21 +55,22 @@ public class MovementScript : MonoBehaviour, Collider {
 		myMoves = new MoveList();
 		myMoves.Load("Movelists");
 		
-		if(!GetComponent<Animation>())
+		animations = GetComponent<Animation>();
+		if(!animations)
 			return;
 			
-		GetComponent<Animation>()["idle"].speed = 0.1f;
-		GetComponent<Animation>()["walk"].speed = 0.1f;
-		GetComponent<Animation>()["jump"].speed = 0.1f;
-		GetComponent<Animation>()["hit"].speed = 0.1f;
-		GetComponent<Animation>()["block"].speed = 0.8f;
+		animations["idle"].speed = 0.1f;
+		animations["walk"].speed = 0.1f;
+		animations["jump"].speed = 0.1f;
+		animations["hit"].speed = 0.1f;
+		animations["block"].speed = 0.8f;
 
-		foreach(AnimationState state in GetComponent<Animation>())
+		foreach(AnimationState state in animations)
 		{
 			state.wrapMode = WrapMode.Once;
 		}		
-		GetComponent<Animation>()["idle"].wrapMode = WrapMode.Loop;
-		GetComponent<Animation>()["walk"].wrapMode = WrapMode.Loop;
+		animations["idle"].wrapMode = WrapMode.Loop;
+		animations["walk"].wrapMode = WrapMode.Loop;
 		
 		colliderID = managerCollection.GetComponent<CollisionManagerScript>().GetColliderID();
 	}
@@ -116,7 +119,7 @@ public class MovementScript : MonoBehaviour, Collider {
 		DoMovement();
 		
 		//Animations
-		if (GetComponent<Animation>() == null)
+		if (animations == null)
 			return;
 
 		if (currentState == State.Idle)
@@ -137,7 +140,7 @@ public class MovementScript : MonoBehaviour, Collider {
 			{
 				horSpeed = 0;
 				
-				GetComponent<Animation>().Play("block");
+				animations.Play("block");
 					
 				currentState = State.Blocking;
 			}
@@ -151,9 +154,9 @@ public class MovementScript : MonoBehaviour, Collider {
 		if (currentState == State.Idle) 
 		{
 			if(horSpeed != 0)
-				GetComponent<Animation>().Play("walk");
+				animations.Play("walk");
 			else
-				GetComponent<Animation>().Play ("idle");
+				animations.Play ("idle");
 		}
 	}
 
@@ -182,8 +185,8 @@ public class MovementScript : MonoBehaviour, Collider {
 				horSpeed *= 0.7f;
 
 				currentState = State.Jumping;
-				if(GetComponent<Animation>())
-					GetComponent<Animation>().Play("jump");
+				if(animations)
+					animations.Play("jump");
 			}
 		}
 		else
@@ -262,11 +265,11 @@ public class MovementScript : MonoBehaviour, Collider {
 				{
 					horSpeed = 0;
 					currentState = State.Hitstun;
-					if(GetComponent<Animation>())
+					if(animations)
 					{
-						GetComponent<Animation>()["hit"].time = 0;
-						GetComponent<Animation>()["hit"].speed = GetComponent<Animation>()["hit"].length / (stunTime/60.0f);
-						GetComponent<Animation>().Play("hit");
+						animations["hit"].time = 0;
+						animations["hit"].speed = animations["hit"].length / (stunTime/60.0f);
+						animations.Play("hit");
 					}
 				}
 				
@@ -303,7 +306,7 @@ public class MovementScript : MonoBehaviour, Collider {
 	
 	public void PlayAnimation(string name, int animLength)
 	{
-		GetComponent<Animation>()[name].speed = GetComponent<Animation>()[name].length / (animLength/60.0f);
-		GetComponent<Animation>().Play(name);
+		animations[name].speed = animations[name].length / (animLength/60.0f);
+		animations.Play(name);
 	}
 }

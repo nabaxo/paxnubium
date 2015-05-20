@@ -1,4 +1,4 @@
-﻿#define RENDERHITSPHERES
+﻿//#define RENDERHITSPHERES
 
 using UnityEngine;
 using System;
