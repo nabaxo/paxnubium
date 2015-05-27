@@ -39,7 +39,6 @@ public class MovementScript : MonoBehaviour, Collider {
 	
 	private State currentState = State.Idle;
 	
-	private MoveList myMoves;
 	private Move currentMove;
 	
 	private int stunTime = 0;
@@ -52,9 +51,6 @@ public class MovementScript : MonoBehaviour, Collider {
 	void Start () {
 	
 	
-		myMoves = new MoveList();
-		myMoves.Load("Movelists");
-		
 		animations = GetComponent<Animation>();
 		if(!animations)
 			return;

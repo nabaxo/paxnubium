@@ -18,15 +18,6 @@ public class InputReader : MonoBehaviour {
 	const int MaxBufferSize = 300;
 	private Queue<int> myBuffer;
 	
-	const int BUTTONHIGH =	1;
-	const int BUTTONMID =	2;
-	const int BUTTONLOW =	4;
-	const int BUTTONRIGHT =	8;
-	const int BUTTONLEFT =	16;
-	const int BUTTONUP =	32;
-	const int BUTTONDOWN =	64;
-	const int BUTTONBLOCK =	128;
-	
 	// Use this for initialization
 	void Start () {
 		myBuffer = new Queue<int>(MaxBufferSize);
@@ -44,28 +35,28 @@ public class InputReader : MonoBehaviour {
 	void FixedUpdate () {
 		int buttonState = 0;
 		if(Input.GetButton(buttonHigh))
-			buttonState += BUTTONHIGH;
+			buttonState += Constants.BUTTONHIGH;
 		
 		if(Input.GetButton(buttonMid)) 
-			buttonState += BUTTONMID;
+			buttonState += Constants.BUTTONMID;
 		
 		if(Input.GetButton(buttonLow)) 
-			buttonState += BUTTONLOW;
+			buttonState += Constants.BUTTONLOW;
 		
 		if(Input.GetButton(buttonRight)) 
-			buttonState += BUTTONRIGHT;
+			buttonState += Constants.BUTTONRIGHT;
 		
 		if(Input.GetButton(buttonLeft)) 
-			buttonState += BUTTONLEFT;
+			buttonState += Constants.BUTTONLEFT;
 		
 		if(Input.GetButton(buttonUp))
-			buttonState += BUTTONUP;
+			buttonState += Constants.BUTTONUP;
 		
 		if(Input.GetButton(buttonDown))
-			buttonState += BUTTONDOWN;
+			buttonState += Constants.BUTTONDOWN;
 		
 		if(Input.GetButton(buttonBlock))
-			buttonState += BUTTONBLOCK;
+			buttonState += Constants.BUTTONBLOCK;
 			
 		//Remove oldest input
 		if(myBuffer.Count >= MaxBufferSize)
@@ -76,28 +67,6 @@ public class InputReader : MonoBehaviour {
 	
 	public Move InputtedMove()
 	{
-		//UGLY TEMP SOLUTION - Will be solved later by having movelist find the correct attack anyway
-		int buttonState = myBuffer.ToArray()[MaxBufferSize - 1];
-		
-		if(Input.GetButton(buttonHigh))
-		{
-			int a = 0;
-			a++;
-		}
-		
-		if((buttonState & BUTTONHIGH) > 0)
-		{
-			return myMoves.GetMove("High");
-		}
-		if((buttonState & BUTTONMID) > 0)
-		{
-			return myMoves.GetMove("Mid");
-		}
-		if((buttonState & BUTTONLOW) > 0)
-		{
-			return myMoves.GetMove("Low");
-		}
-		
-		return null;
+		return myMoves.GetMove(myBuffer);
 	}
 }

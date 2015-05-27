@@ -14,6 +14,19 @@ public class MoveList : List<Move>
 		{
 		}
 		
+		public Move GetMove(Queue<int> buffer)
+		{
+			foreach(Move move in this)
+			{
+				if(move.VerifyInput(buffer))
+				{ 
+					return move;
+				}
+			}
+			
+			return null;
+		}
+	
 		public Move GetMove(string moveName)
 		{
 			foreach(Move move in this)
@@ -56,6 +69,8 @@ public class MoveList : List<Move>
 [XmlRoot("Move")]
 public class Move
 {
+	//***************************************************
+	//Initialization
 	public void Init()
 	{
 		int highestTotaltime = 0;
@@ -85,8 +100,19 @@ public class Move
 		}
 		
 		Totaltime = Attacktime + recoveryTime;
+		
+		inputReq.ParseInput(req.input);
 	}
 	
+	//***************************************************
+	//Actions
+	
+	public bool VerifyInput(Queue<int> buffer)
+	{
+		return inputReq.Verify(buffer);
+	}
+	
+	//Perform move
 	public void Do(MovementScript parent)
 	{
 		AttackTimer = 0;
@@ -126,6 +152,19 @@ public class Move
 		AttackTimer++;
 	}
 	
+	public void OnCollision(CollObject myObj, CollObject theirObj)
+	{
+		foreach(Hitbox attack in Hitboxes)
+		{
+			if(attack.HitID == myObj.HitID)
+			{
+				attack.enabled = false;
+			}
+		}
+	}
+	
+	//***************************************************
+	//Accessors
 	public EffectProperty GetProperty(EffectType effect, PropertyType property)
 	{
 		//Find Effect
@@ -145,23 +184,14 @@ public class Move
 	{
 		return (AttackTimer <= Totaltime);
 	}
-	
-	public void OnCollision(CollObject myObj, CollObject theirObj)
-	{
-		foreach(Hitbox attack in Hitboxes)
-		{
-			if(attack.HitID == myObj.HitID)
-			{
-				attack.enabled = false;
-			}
-		}
-	}
-	
+		
+	//***************************************************
+	//Xml
 	[XmlAttribute("Name")]
 	public string Name = "";
 	
-	[XmlAttribute("Recovery")]
-	public int RecoveryTime = 0;
+	[XmlElement("Requirement")]
+	public Requirement req;
 	
 	[XmlElement("Hitbox")]
 	public List<Hitbox> Hitboxes = new List<Hitbox>();
@@ -171,6 +201,8 @@ public class Move
 	
 	
 	//Dynamically calculated values:
+	public InputRequirement inputReq = new InputRequirement();
+	
 	public int Attacktime;
 	public int Totaltime;
 	
@@ -179,6 +211,12 @@ public class Move
 	
 	//Reference to creator
 	private MovementScript parentRef;
+}
+
+public class Requirement
+{	
+	[XmlElement("Input")]
+	public String input = "";
 }
 
 public class Hitbox

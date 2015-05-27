@@ -1,4 +1,7 @@
-<Move Name="High" Recovery="0">
+<Move Name="High">
+	<Requirement>
+		<Input>H</Input>
+	</Requirement>
 	<Hitbox Spawntime="5" Lifetime="2" PosX="3.7" PosY="6" Radius="2" Type="Hit">
 		<Property Type="Damage" Value="50"/>
 		<Property Type="Hitstun" Value="26"/>
