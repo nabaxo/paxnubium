@@ -72,11 +72,13 @@ public class CollisionManagerScript : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
 	
+		//Debug.Log("Circles: " + myCircleList.Count);
 		for(int i = 0; i < myCircleList.Count; i++)
 		{
 			for(int j = i; j < myCircleList.Count; j++)
 			{
 				CollisionCheck(myCircleList[i], myCircleList[j]);
+				//CollisionCheck(myCircleList[i], myCircleList[j], myCircleList.Count > 8);
 			}
 		}
 		
@@ -111,6 +113,16 @@ public class CollisionManagerScript : MonoBehaviour {
 	
 	void CollisionCheck(CollObject obj, CollObject otherObj)
 	{
+		CollisionCheck(obj, otherObj, false);
+	}
+	
+	void CollisionCheck(CollObject obj, CollObject otherObj, bool log)
+	{
+		if(log)
+		{
+			Debug.Log("Obj.enabled: " + obj.enabled + " ID: " + obj.ID + " Type: " + obj.type);
+			Debug.Log("OtherObj.enabled: " + otherObj.enabled + " ID: " + otherObj.ID + " Type: " + otherObj.type);
+		}
 		if(!obj.enabled || !otherObj.enabled)
 			return;
 			
@@ -121,9 +133,15 @@ public class CollisionManagerScript : MonoBehaviour {
 		if(!(obj.type == CollisionType.Hit && otherObj.type == CollisionType.Hittable ||
 		   obj.type == CollisionType.Hittable && otherObj.type == CollisionType.Hit))
 		   return;
-		   
+		
+		if(log)
+			Debug.Log("Distance: " + Vector2.Distance(obj.pos, otherObj.pos) + " obj.radius: " + obj.radius + " otherObj.radius: " + otherObj.radius);
+			
 		if(Vector2.Distance(obj.pos, otherObj.pos) < (obj.radius + otherObj.radius))
 		{
+			if(log)
+				Debug.Log("Hit!");
+				
 			obj.enabled = obj.collider.OnCollision(obj, otherObj);
 			otherObj.enabled = otherObj.collider.OnCollision(otherObj, obj);
 		}
